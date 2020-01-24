@@ -63,32 +63,6 @@ function App() {
       <Grid item xs={12}>
         <Typography variant="h6" style={{marginTop:'2vh',textAlign:'center'}}> THE TEAM</Typography>
       </Grid>
-      <Grid container spacing={2} direction="row" alignItems="center" justify="center">
-        <Grid item xs={6} md={6}>
-          <Card>
-            <CardContent>
-              <Grid item xs={6}>
-                <Avatar alt="Deon Lim" src="/deon.jpg"/>
-              </Grid>
-              <Grid item xs={6}>
-              <Typography variant="body1"> Deon Lim </Typography>
-              </Grid>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={6} md={6}>
-          <Card>
-            <CardContent>
-              <Grid item xs={6}>
-                <Avatar alt="Vince Toh" src="/vince.jpg"/>
-              </Grid>
-              <Grid item xs={6}>
-              <Typography variant="body1"> Vince Toh</Typography>
-              </Grid>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
     </Grid>
   );
 }
