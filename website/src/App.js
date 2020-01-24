@@ -34,6 +34,15 @@ function App() {
     alignContent="center"
     style={{minHeight:'93vh'}}>
       <Grid item xs={12}>
+      {/* <AdSense.Google
+        client='ca-pub-9373441186970265'
+        slot='7806394673'
+        style={{ display: 'block' }}
+        layout='in-article'
+        format='fluid'
+      /> */}
+      </Grid>
+      <Grid item xs={12}>
         <Typography variant="h1"> {count} <img src="/prayer.png"/>  </Typography>
       </Grid>
       
