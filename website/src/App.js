@@ -60,9 +60,6 @@ function App() {
         <Typography variant="body1" style={{textAlign:'center'}}> Send a wireless prayer to the kids! </Typography>
         <Typography variant="subtitle1" style={{textAlign:'center'}}> Seriously, dont eat bats </Typography>
       </Grid>
-      <Grid item xs={12}>
-        <Typography variant="h6" style={{marginTop:'2vh',textAlign:'center'}}> THE TEAM</Typography>
-      </Grid>
     </Grid>
   );
 }
