@@ -17,6 +17,10 @@ import (
 type Request struct {
 	Message string `json:"message"`
 }
+type Payload struct {
+	Country string `json:"Country"`
+	Deaths  uint32 `json:"Deaths"`
+}
 
 // Serve will serve the frontend
 var Serve = func(w http.ResponseWriter, r *http.Request) {
@@ -89,11 +93,8 @@ var Get = func(w http.ResponseWriter, r *http.Request) {
 // UpdateDeath updates the death count
 var UpdateDeath = func(w http.ResponseWriter, r *http.Request) {
 	resp := make(map[string]interface{})
-	type payload struct {
-		Country string `json:"Country"`
-		Deaths  uint32 `json:"Deaths"`
-	}
-	tempPayload := &payload{}
+
+	tempPayload := &Payload{}
 	json.NewDecoder(r.Body).Decode(tempPayload)
 	// Get the level db
 	db, _ := leveldb.OpenFile("./db", nil)
