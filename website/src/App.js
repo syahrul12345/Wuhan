@@ -5,6 +5,7 @@ import './App.css';
 
 function App() {
   const [count,setCount] = useState(0)
+  const [deathCount,setDeathCount] = useState(0)
   const incrementPrayer = () => {
     const payload = {
       message:"increment!"
@@ -17,9 +18,11 @@ function App() {
       })
   }
   useEffect(() => {
+    // ALso returns the death count...
     axios.get("/api/get")
       .then((res) => {
         setCount(res.data.count)
+        setDeathCount(res.data.death)
       }).catch((err) => {
         console.log(err)
         console.log("Couldnt connect to database")
@@ -34,6 +37,10 @@ function App() {
     alignContent="center"
     style={{minHeight:'93vh'}}>
       <Grid item xs={12}>
+        <Typography variant="h1" style={{textAlign:'center'}}> {deathCount} <img style={{maxHeight:'160',maxWidth:'160'}} src="/skull.png"/>  </Typography>
+        <Typography variant="body1" style={{textAlign:'center'}}>{deathCount} have already died.... the virus is coming for <strong>YOU.</strong></Typography>
+      </Grid>
+      <Grid item xs={12}>
       {/* <AdSense.Google
         client='ca-pub-9373441186970265'
         slot='7806394673'
@@ -45,7 +52,6 @@ function App() {
       <Grid item xs={12}>
         <Typography variant="h1"> {count} <img src="/prayer.png"/>  </Typography>
       </Grid>
-      
       <Grid item xs={12}>
         <Button 
         variant="contained"

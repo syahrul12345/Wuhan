@@ -67,6 +67,8 @@ func start() {
 	http.HandleFunc("/", controller.Serve)
 	http.HandleFunc("/api/save", controller.Save)
 	http.HandleFunc("/api/get", controller.Get)
+	http.HandleFunc("/api/deathUpdate", controller.UpdateDeath)
+	http.HandleFunc("/api/getDeaths", controller.GetTotalDeath)
 	fmt.Println("Webserver is on http://127.0.0.1:8000")
 	http.ListenAndServe(":"+port, nil)
 }

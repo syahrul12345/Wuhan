@@ -3,6 +3,7 @@ package controller
 import (
 	_ "backend/models"
 	"backend/utils"
+	"encoding/binary"
 	"encoding/json"
 	"fmt"
 	"math/big"
@@ -63,6 +64,7 @@ var Get = func(w http.ResponseWriter, r *http.Request) {
 	resp := make(map[string]interface{})
 	db, _ := leveldb.OpenFile("./db", nil)
 	defer db.Close()
+	// Get prayer count
 	data, err := db.Get([]byte("counts"), nil)
 	if err != nil {
 		// Does not exist..
@@ -70,6 +72,57 @@ var Get = func(w http.ResponseWriter, r *http.Request) {
 	}
 	z := big.NewInt(0).SetBytes(data)
 	resp["count"] = z.Text(10)
+	// get death count
+	data, err = db.Get([]byte("deaths"), nil)
+	if err != nil {
+		// Does not exist...
+		fmt.Println("deaths count first initiated")
+		db.Put([]byte("deaths"), []byte{0}, nil)
+	}
+	z = big.NewInt(0).SetBytes(data)
+	resp["death"] = z.Text(10)
+	w.WriteHeader(http.StatusOK)
+	utils.Respond(w, resp)
+}
+
+// UpdateDeath updates the death count
+var UpdateDeath = func(w http.ResponseWriter, r *http.Request) {
+	resp := make(map[string]interface{})
+	type payload struct {
+		Country string `json:"Country"`
+		Deaths  uint32 `json:"Deaths"`
+	}
+	tempPayload := &payload{}
+	json.NewDecoder(r.Body).Decode(tempPayload)
+	// Get the level db
+	db, _ := leveldb.OpenFile("./db", nil)
+	defer db.Close()
+	if tempPayload.Country == "global" {
+		buf := make([]byte, 4)
+		binary.BigEndian.PutUint32(buf, tempPayload.Deaths)
+		db.Put([]byte("deaths"), buf, nil)
+	} else {
+		buf := make([]byte, 4)
+		binary.BigEndian.PutUint32(buf, tempPayload.Deaths)
+		db.Put([]byte(tempPayload.Country), buf, nil)
+	}
+	resp["message"] = "sucess in updating death count"
+	w.WriteHeader(http.StatusOK)
+	utils.Respond(w, resp)
+}
+
+// GetTotalDeath is a comment
+var GetTotalDeath = func(w http.ResponseWriter, r *http.Request) {
+	resp := make(map[string]interface{})
+	db, _ := leveldb.OpenFile("./db", nil)
+	data, err := db.Get([]byte("deaths"), nil)
+	defer db.Close()
+	if err != nil {
+		fmt.Println("Cant get total death count... intiializing it to 0")
+		db.Put([]byte("deaths"), []byte{0}, nil)
+	}
+	z := big.NewInt(0).SetBytes(data)
+	resp["death"] = z.Text(10)
 	w.WriteHeader(http.StatusOK)
 	utils.Respond(w, resp)
 }
