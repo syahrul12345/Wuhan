@@ -2,11 +2,11 @@ package main
 
 import (
 	"backend/controller"
-	"fmt"
-	// "fmt"
+	"log"
 
 	"net/http"
-	// "github.com/sevlyar/go-daemon"
+
+	"github.com/sevlyar/go-daemon"
 )
 
 const (
@@ -14,28 +14,28 @@ const (
 )
 
 func main() {
-	// cntxt := &daemon.Context{
-	// 	PidFileName: "sample.pid",
-	// 	PidFilePerm: 0644,
-	// 	LogFileName: "sample.log",
-	// 	LogFilePerm: 0640,
-	// 	WorkDir:     "./",
-	// 	Umask:       027,
-	// 	Args:        []string{"[go-daemon sample]"},
-	// }
+	cntxt := &daemon.Context{
+		PidFileName: "sample.pid",
+		PidFilePerm: 0644,
+		LogFileName: "sample.log",
+		LogFilePerm: 0640,
+		WorkDir:     "./",
+		Umask:       027,
+		Args:        []string{"[go-daemon sample]"},
+	}
 
-	// d, err := cntxt.Reborn()
-	// if err != nil {
-	// 	log.Fatal("Unable to run: ", err)
-	// }
-	// if d != nil {
-	// 	return
-	// }
+	d, err := cntxt.Reborn()
+	if err != nil {
+		log.Fatal("Unable to run: ", err)
+	}
+	if d != nil {
+		return
+	}
 
-	// defer cntxt.Release()
+	defer cntxt.Release()
 
-	// log.Print("- - - - - - - - - - - - - - -")
-	// log.Print("daemon started")
+	log.Print("- - - - - - - - - - - - - - -")
+	log.Print("daemon started")
 	start()
 }
 
@@ -69,6 +69,6 @@ func start() {
 	http.HandleFunc("/api/get", controller.Get)
 	http.HandleFunc("/api/deathUpdate", controller.UpdateDeath)
 	http.HandleFunc("/api/getDeaths", controller.GetTotalDeath)
-	fmt.Println("Webserver is on http://127.0.0.1:8000")
+	log.Println("Webserver is on http://127.0.0.1:8000")
 	http.ListenAndServe(":"+port, nil)
 }
