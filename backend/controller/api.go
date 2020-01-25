@@ -74,6 +74,7 @@ var Get = func(w http.ResponseWriter, r *http.Request) {
 	resp["count"] = z.Text(10)
 	// get death count
 	data, err = db.Get([]byte("deaths"), nil)
+	fmt.Println(data)
 	if err != nil {
 		// Does not exist...
 		fmt.Println("deaths count first initiated")
@@ -98,11 +99,13 @@ var UpdateDeath = func(w http.ResponseWriter, r *http.Request) {
 	db, _ := leveldb.OpenFile("./db", nil)
 	defer db.Close()
 	if tempPayload.Country == "global" {
+		fmt.Println("uploading global...")
 		buf := make([]byte, 4)
 		binary.BigEndian.PutUint32(buf, tempPayload.Deaths)
 		db.Put([]byte("deaths"), buf, nil)
 	} else {
 		buf := make([]byte, 4)
+		fmt.Println("updating others.....")
 		binary.BigEndian.PutUint32(buf, tempPayload.Deaths)
 		db.Put([]byte(tempPayload.Country), buf, nil)
 	}
