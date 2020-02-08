@@ -1,0 +1,14 @@
+version: '3'
+services:
+  prayforwuhanbackend:
+    container_name: prayforwuhanbackend
+    build: .
+    volumes:
+      - ./backend/db:/db
+    ports: 
+      - '8000:8000'
+  prayforwuhanbot:
+    container_name: prayforwuhanbot
+    build: ./bot/
+    
+    

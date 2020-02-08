@@ -24,7 +24,7 @@ type Payload struct {
 
 // Serve will serve the frontend
 var Serve = func(w http.ResponseWriter, r *http.Request) {
-	const staticPath = "../website/build"
+	const staticPath = "./build"
 	const indexPath = "index.html"
 	fileServer := http.FileServer(http.Dir(staticPath))
 	path, err := filepath.Abs(r.URL.Path)
@@ -78,7 +78,6 @@ var Get = func(w http.ResponseWriter, r *http.Request) {
 	resp["count"] = z.Text(10)
 	// get death count
 	data, err = db.Get([]byte("deaths"), nil)
-	fmt.Println(data)
 	if err != nil {
 		// Does not exist...
 		fmt.Println("deaths count first initiated")
