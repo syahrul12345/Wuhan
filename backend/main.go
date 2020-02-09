@@ -4,6 +4,8 @@ import (
 	"backend/controller"
 	"log"
 	"net/http"
+
+	_ "github.com/joho/godotenv/autoload"
 )
 
 const (
@@ -62,6 +64,8 @@ func start() {
 	// }
 
 	http.HandleFunc("/", controller.Serve)
+	http.HandleFunc("/api/createAccount", controller.CreateAccount)
+	http.HandleFunc("/api/login", controller.Login)
 	http.HandleFunc("/api/save", controller.Save)
 	http.HandleFunc("/api/get", controller.Get)
 	http.HandleFunc("/api/deathUpdate", controller.UpdateDeath)

@@ -9,10 +9,10 @@ export default function CreatePage() {
     const [myCookie,setMyCookie] = useState('')
     useEffect(()=> {
       // Prevent routing on the first load
-      if (myCookie != '') {
-        cookies.set('token',myCookie)
+      if (myCookie !== '') {
+        cookies.set('x-wuhan-cookie',`bearer ${myCookie}`)
       }
-    },[myCookie])
+    },[cookies,myCookie])
 
     return(
       <Grid

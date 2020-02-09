@@ -1,5 +1,5 @@
 import React,{useState,useEffect} from 'react';
-import { Grid, Typography, Button, Card, Avatar, CardContent } from '@material-ui/core'
+import { Grid, Typography, Button} from '@material-ui/core'
 import axios from 'axios'
 import './Home.css';
 

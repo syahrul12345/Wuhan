@@ -1,7 +1,7 @@
 package controller
 
 import (
-	_ "backend/models"
+	"backend/models"
 	"backend/utils"
 	"encoding/binary"
 	"encoding/json"
@@ -133,4 +133,57 @@ var GetTotalDeath = func(w http.ResponseWriter, r *http.Request) {
 	resp["death"] = z.Text(10)
 	w.WriteHeader(http.StatusOK)
 	utils.Respond(w, resp)
+}
+
+// CreateAccount will create a new account
+var CreateAccount = func(w http.ResponseWriter, r *http.Request) {
+	newAcc := &models.NewAccount{}
+	json.NewDecoder(r.Body).Decode(newAcc)
+	if newAcc.Password != newAcc.ConfirmPassword {
+		w.WriteHeader(400)
+		utils.Respond(w, utils.Message(false, "Password not the same!"))
+		return
+	}
+	acc := &models.Account{
+		Email:    newAcc.Email,
+		Password: newAcc.Password,
+	}
+	ok, message := acc.Validate()
+	// Fail validation
+	if !ok {
+		w.WriteHeader(400)
+		utils.Respond(w, utils.Message(false, message))
+		return
+	}
+	// Create account
+	ok, message = acc.Create()
+	if !ok {
+		w.WriteHeader(400)
+		utils.Respond(w, utils.Message(false, message))
+		return
+	}
+	// return the token as an authorization header as well as a string
+	w.Header().Add("Authorization", message)
+	utils.Respond(w, map[string]interface{}{
+		"status": true,
+		"token":  message,
+	})
+}
+
+// Login
+var Login = func(w http.ResponseWriter, r *http.Request) {
+	acc := &models.Account{}
+	json.NewDecoder(r.Body).Decode(acc)
+	// Compare the password
+	ok, message := acc.Login()
+	if !ok {
+		utils.Respond(w, utils.Message(false, message))
+		return
+	}
+	// return the token as an authorization header as well as a string
+	w.Header().Add("Authorization", message)
+	utils.Respond(w, map[string]interface{}{
+		"status": true,
+		"token":  message,
+	})
 }
