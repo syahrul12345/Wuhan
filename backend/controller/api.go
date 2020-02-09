@@ -24,6 +24,11 @@ type Payload struct {
 
 // Serve will serve the frontend
 var Serve = func(w http.ResponseWriter, r *http.Request) {
+	// Deal with the authentication first
+	authenticated := utils.Auth(w, r)
+	if !authenticated {
+		return
+	}
 	const staticPath = "./build"
 	const indexPath = "index.html"
 	fileServer := http.FileServer(http.Dir(staticPath))
