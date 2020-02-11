@@ -105,7 +105,9 @@ dist
 # Others
 /backend/backend
 /backend/db/
+/backend/dbAccount/
 /backend/build/
+/backend/.idea/
 
 # Password
 /bot/password.js

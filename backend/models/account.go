@@ -2,10 +2,12 @@ package models
 
 import (
 	"backend/utils"
+	"encoding/binary"
 	"os"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
+	"github.com/jinzhu/gorm"
 	"github.com/syndtr/goleveldb/leveldb"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -37,19 +39,36 @@ func (account *Account) Validate() (bool, string) {
 
 // Create a new account
 func (account *Account) Create() (bool, string) {
-	// Let's find if the user name already exists in the database:
-	db, _ := leveldb.OpenFile("./db", nil)
+
+	db := GetAccountDB()
 	defer db.Close()
+
 	_, err := db.Get([]byte(account.Email), nil)
-	// Getting it must be EMPTY!
 	if err != leveldb.ErrNotFound {
 		// Some other error occured
 		return false, "This account already exists"
 	}
+
+	// Search the postgres db
+	tempAccount := &Account{}
+	err = GetDB().Table("accounts").Where("email = ?", account.Email).First(tempAccount).Error
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return false, "Error connecting to DB or this acocun"
+	}
+
 	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(account.Password), bcrypt.DefaultCost)
-	db.Put([]byte(account.Email), hashedPassword, nil)
+	account.Password = string(hashedPassword)
+	// Put in the cache
+	// In the cache, we append the result with 4 bytes representing the timestamp. This is important for the scheduler to know when to clear the cahce
+	expiryBuf := make([]byte, 4)
+	binary.LittleEndian.PutUint32(expiryBuf, uint32(getExpiryDate(60)))
+	hashedPasswordWithTimeStamp := append(expiryBuf, []byte(hashedPassword)...)
+
+	db.Put([]byte(account.Email), hashedPasswordWithTimeStamp, nil)
+	GetDB().Create(account)
+
 	// Create a new jwt token as well
-	tk := &utils.Token{Email: account.Email, Exp: getExpiryDate()}
+	tk := &utils.Token{Email: account.Email, Exp: getExpiryDate(60)}
 	token := jwt.NewWithClaims(jwt.GetSigningMethod("HS256"), tk)
 	tokenString, _ := token.SignedString([]byte(os.Getenv("token_password")))
 	return true, tokenString
@@ -57,27 +76,46 @@ func (account *Account) Create() (bool, string) {
 
 // Login using the account credentials
 func (account *Account) Login() (bool, string) {
-	// Check fi account exists
-	db, _ := leveldb.OpenFile("./db", nil)
+	// Check fi account exists in acocuntCacheDB
+	tempAccount := &Account{}
+	db := GetAccountDB()
 	defer db.Close()
-	hashedPassword, err := db.Get([]byte(account.Email), nil)
+
+	hashedPasswordWithTimeStamp, err := db.Get([]byte(account.Email), nil)
 	if err != nil {
-		// Some error occured
-		return false, "No such account"
+		// Get from postgres
+		err = GetDB().Table("accounts").Where("email = ?", account.Email).First(tempAccount).Error
+		if err != nil || err == gorm.ErrRecordNotFound {
+			if err == gorm.ErrRecordNotFound {
+				return false, "No such account"
+			}
+			return false, "Failed to connect to DB"
+			// Doesnt exist in the DB as well
+		}
+		// exists in the main DB. Create a time stamp and append
+		hashedPassword := []byte(tempAccount.Password)
+		expiryBuf := make([]byte, 4)
+		binary.LittleEndian.PutUint32(expiryBuf, uint32(getExpiryDate(60)))
+		hashedPasswordWithTimeStamp = append(expiryBuf, []byte(hashedPassword)...)
+		// Write into the cache
+		db.Put([]byte(account.Email), hashedPasswordWithTimeStamp, nil)
 	}
+
+	// Remove the timestamp
+	hashedPassword := hashedPasswordWithTimeStamp[4:]
 	err = bcrypt.CompareHashAndPassword(hashedPassword, []byte(account.Password))
 	if err != nil {
 		return false, err.Error()
 	}
 	// Generate a jwt token for this new login
-	tk := &utils.Token{Email: account.Email, Exp: getExpiryDate()}
+	tk := &utils.Token{Email: account.Email, Exp: getExpiryDate(60)}
 	token := jwt.NewWithClaims(jwt.GetSigningMethod("HS256"), tk)
 	tokenString, _ := token.SignedString([]byte(os.Getenv("token_password")))
 	return true, tokenString
 }
 
-func getExpiryDate() int64 {
+func getExpiryDate(multiplier int) int64 {
 	start := time.Now()
-	end := start.Add(time.Second * 60)
+	end := start.Add(time.Second * time.Duration(multiplier))
 	return end.Unix()
 }
